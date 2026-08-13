@@ -130,11 +130,11 @@ if location_data:
     with tab_live:
         st.subheader(f"🗺️ Live Hazard Map for {location_data['city']}")
         
-        # DARK MODE
+        
+        #   map tiles
         m = folium.Map(
             location=[location_data['lat'], location_data['lon']], 
-            zoom_start=12,
-            tiles="cartodbdark_matter"
+            zoom_start=12
         )
 
         for inc in processed_incidents:
