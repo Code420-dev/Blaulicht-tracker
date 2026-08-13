@@ -26,8 +26,7 @@ def get_traffic_alerts(state_code, city_name):
                 if hours_old > 12:
                     continue
 
-            # NEW: Extract specific Autobahn and nearby city from the title
-            district = "Major Roads"
+           
             a_match = re.search(r'\b(A\s?\d+)\b', title)           # Looks for "A4" or "A 5"
             bei_match = re.search(r'bei\s+([A-Z][a-zäöüß]+)', title) # Looks for "bei Jena"
             
@@ -57,6 +56,5 @@ def get_traffic_alerts(state_code, city_name):
                 "timestamp": entry.published
             })
     except Exception as e:
-        print(f"[!] Traffic API Error: {e}")
-        
+        print(f"[!] Traffic API Error: {e}")  
     return incidents
