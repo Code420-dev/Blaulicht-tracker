@@ -16,7 +16,7 @@ def fetch_live_warnings():
         local_found = False
         
         for warning in warnings:
-            # 1. Grab the ID, which contains the state code (DE-HE = Hessen)
+            # 
             warning_id = warning.get('id', '')
             severity = warning.get('severity', 'Unknown')
             
@@ -24,13 +24,15 @@ def fetch_live_warnings():
             title_dict = warning.get('i18nTitle', {})
             headline = title_dict.get('de', 'No details provided')
             
-            # 3. Check if the ID contains the Hessen code OR if Frankfurt is mentioned
+            
+            
             if 'DE-HE' in warning_id or 'Frankfurt' in headline:
                 local_found = True
                 print(f"🚨 [LOCAL ALERT DETECTED]")
                 print(f"   Severity: {severity}")
                 print(f"   Details: {headline}")
                 print(f"   Tracking ID: {warning_id}\n")
+
         
         if not local_found:
             print("✅ No active emergency warnings in the immediate area right now.\n")

@@ -19,7 +19,7 @@ def main():
     print("-" * 50)
 
     for idx, incident in enumerate(all_incidents, start=1):
-        # We use a visual indicator to separate Police vs NINA alerts
+        
         icon = "🚓" if "Polizei" in incident['source'] else "🚨"
         
         print(f"[{idx}] {icon} Source  : {incident['source']}")
@@ -28,6 +28,7 @@ def main():
         print(f"    Details : {incident['title']}")
         print(f"    Time    : {incident['timestamp']}")
         print("-" * 50)
+
 
 if __name__ == "__main__":
     main()
