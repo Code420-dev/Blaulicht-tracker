@@ -46,6 +46,7 @@ show_warnings = st.sidebar.checkbox("🚨 Civil Warnings (NINA)", value=True)
 
 if st.sidebar.button("🔄 Force Refresh API Data"):
     fetch_all_data.clear() 
+    get_location_info.clear() 
     st.rerun()
 
 # Lookup Location Data
