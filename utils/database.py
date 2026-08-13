@@ -2,7 +2,9 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 
+
 DB_FILE = "emergencies.db"
+
 
 def init_db():
     """Creates the database table if it doesn't already exist."""
@@ -47,4 +49,5 @@ def load_history():
     conn = sqlite3.connect(DB_FILE)
     df = pd.read_sql_query("SELECT * FROM history ORDER BY logged_at DESC", conn)
     conn.close()
-    return df
+    return df 
+ 
