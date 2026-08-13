@@ -57,7 +57,7 @@ if location_data:
     with st.spinner("Loading live dispatch data..."):
         raw_incidents = fetch_all_data(location_data["state_code"], location_data["city"])
 
-    # Clean, Filter and Score Incidents
+    # Clean, Filter & Score Incidents
     processed_incidents = []
     
     for inc in raw_incidents:
@@ -97,24 +97,45 @@ if location_data:
 
     processed_incidents.sort(key=lambda x: x['score'], reverse=True)
 
-    # Log to our SQLite Database
+    
     log_incidents(processed_incidents)
     
+    st.markdown("---")
+    
+    
+    # UI 
+
+    total_alerts = len(processed_incidents)
+    police_count = len([i for i in processed_incidents if i['category'] == 'Polizei'])
+    fire_count = len([i for i in processed_incidents if i['category'] == 'Feuerwehr'])
+    traffic_count = len([i for i in processed_incidents if i['category'] not in ['Polizei', 'Feuerwehr', 'Emergency Warning']])
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("🚨 Active Alerts", total_alerts)
+    with col2:
+        st.metric("🚓 Police", police_count)
+    with col3:
+        st.metric("🚒 Fire & Rescue", fire_count)
+    with col4:
+        st.metric("🚧 Traffic/Roads", traffic_count)
+
     st.markdown("---")
     
     # TAB INTERFACE
     tab_live, tab_history = st.tabs(["🗺️ Live Map & Active Alerts", "🗄️ Historical Database"])
     
-    #TAB 1: LIVE MAP
+    # LIVE MAP
     with tab_live:
         st.subheader(f"🗺️ Live Hazard Map for {location_data['city']}")
         
+        # DARK MODE
         m = folium.Map(
             location=[location_data['lat'], location_data['lon']], 
             zoom_start=12,
-            tiles="cartodbdark_matter" 
+            tiles="cartodbdark_matter"
         )
-        
+
         for inc in processed_incidents:
             inc_lat, inc_lon = get_incident_coordinates(
                 location_data['city'], 
@@ -166,7 +187,7 @@ if location_data:
                     st.markdown(f"**[🔗 Read Full Article / Update]({inc['url']})**")
                     st.caption(f"Source: {inc['source']} | Published: {inc['timestamp']}")
 
-    #HISTORICAL DATABASE 
+    # HISTORICAL DATABASE
     with tab_history:
         st.subheader("🗄️ Historical Incident Logs")
         st.markdown("This database logs every emergency event captured during your live scans.")
@@ -174,8 +195,6 @@ if location_data:
         history_df = load_history()
         
         if not history_df.empty:
-            st.metric("Total Incidents Logged", len(history_df))
-            
             
             st.dataframe(
                 history_df, 
