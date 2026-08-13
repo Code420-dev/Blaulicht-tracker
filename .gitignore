@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual Environments
+venv/
+.env
+
+# Local Databases
+*.db
+emergencies.db
