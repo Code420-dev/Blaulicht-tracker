@@ -26,7 +26,7 @@ def fetch_all_data(state_code, city_name):
     nina_data = get_nina_alerts(region_code=state_code)
     traffic_data = get_traffic_alerts(state_code, city_name)
     fire_data = get_fire_dispatches(city_name)
-    police_data = get_police_reports()
+    police_data = get_police_reports(city_name)
     return nina_data + traffic_data + fire_data + police_data
 
 st.title("🚘 Live Driver Safety & Route Tracker")
