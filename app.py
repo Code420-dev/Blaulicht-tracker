@@ -109,8 +109,12 @@ if location_data:
     with tab_live:
         st.subheader(f"🗺️ Live Hazard Map for {location_data['city']}")
         
-        m = folium.Map(location=[location_data['lat'], location_data['lon']], zoom_start=12)
-
+        m = folium.Map(
+            location=[location_data['lat'], location_data['lon']], 
+            zoom_start=12,
+            tiles="cartodbdark_matter" 
+        )
+        
         for inc in processed_incidents:
             inc_lat, inc_lon = get_incident_coordinates(
                 location_data['city'], 
