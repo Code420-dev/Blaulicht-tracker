@@ -54,7 +54,7 @@ if location_data:
     st.sidebar.success(f"📍 Target: **{location_data['city']}** ({location_data['state']})")
     
     with st.spinner("Loading live dispatch data..."):
-        # Fetch data through our new high-speed cache
+        
         raw_incidents = fetch_all_data(location_data["state_code"], location_data["city"])
 
     # Clean, Filter & Score Incidents
@@ -98,12 +98,9 @@ if location_data:
     
     st.markdown("---")
     
-    # -------------------------------------------------------------
-    # TAB INTERFACE SETUP
-    # -------------------------------------------------------------
     tab_live, tab_history = st.tabs(["🗺️ Live Map & Active Alerts", "🗄️ Historical Database"])
     
-    # --- TAB 1: LIVE MAP ---
+    #  LIVE MAP
     with tab_live:
         st.subheader(f"🗺️ Live Hazard Map for {location_data['city']}")
         
@@ -160,7 +157,7 @@ if location_data:
                     st.write(f"**Full Details:** {inc['title']}")
                     st.caption(f"Source: {inc['source']} | Published: {inc['timestamp']}")
 
-    # --- TAB 2: HISTORICAL DATABASE ---
+    # HISTORICAL DATABASE
     with tab_history:
         st.subheader("🗄️ Historical Incident Logs")
         st.markdown("This database logs every emergency event captured during your live scans.")
