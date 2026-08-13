@@ -1,6 +1,7 @@
 import streamlit as st
 import folium
 import pandas as pd
+import urllib.parse
 from streamlit_folium import st_folium
 from clients.nina import get_nina_alerts
 from clients.traffic import get_traffic_alerts
@@ -44,7 +45,7 @@ show_traffic = st.sidebar.checkbox("🚧 Roadblocks & Traffic", value=True)
 show_warnings = st.sidebar.checkbox("🚨 Civil Warnings (NINA)", value=True)
 
 if st.sidebar.button("🔄 Force Refresh API Data"):
-    fetch_all_data.clear() # Clears the memory cache
+    fetch_all_data.clear() 
     st.rerun()
 
 # Lookup Location Data
@@ -54,16 +55,14 @@ if location_data:
     st.sidebar.success(f"📍 Target: **{location_data['city']}** ({location_data['state']})")
     
     with st.spinner("Loading live dispatch data..."):
-        
         raw_incidents = fetch_all_data(location_data["state_code"], location_data["city"])
 
-    # Clean, Filter & Score Incidents
+    # Clean, Filter and Score Incidents
     processed_incidents = []
     
     for inc in raw_incidents:
         cat = inc.get('category', 'General')
         
-        # Apply sidebar filters BEFORE processing to save speed
         if cat == "Polizei" and not show_police: continue
         if cat == "Feuerwehr" and not show_fire: continue
         if "Road" in cat or "Traffic" in cat or "Closure" in cat:
@@ -77,6 +76,10 @@ if location_data:
         source = inc.get('source', 'System')
         timestamp = inc.get('timestamp', 'Live')
 
+        # DYNAMIC LINK GENERATOR
+        safe_title = urllib.parse.quote(title)
+        url = f"https://www.google.com/search?q={safe_title}"
+
         safety_status, score = assess_incident(title, cat, hours_old)
 
         processed_incidents.append({
@@ -88,7 +91,8 @@ if location_data:
             "source": source,
             "timestamp": timestamp,
             "safety_status": safety_status,
-            "score": score
+            "score": score,
+            "url": url
         })
 
     processed_incidents.sort(key=lambda x: x['score'], reverse=True)
@@ -98,9 +102,10 @@ if location_data:
     
     st.markdown("---")
     
+    # TAB INTERFACE
     tab_live, tab_history = st.tabs(["🗺️ Live Map & Active Alerts", "🗄️ Historical Database"])
     
-    #  LIVE MAP
+    #TAB 1: LIVE MAP
     with tab_live:
         st.subheader(f"🗺️ Live Hazard Map for {location_data['city']}")
         
@@ -134,7 +139,6 @@ if location_data:
                 icon=folium.Icon(color=pin_color, icon=pin_icon)
             ).add_to(m)
 
-        # returned_objects=[] stops the map from constantly refreshing Streamlit
         st_folium(m, width=1000, height=450, returned_objects=[])
 
         st.subheader(f"Active Dispatches & Hazards ({len(processed_incidents)} items)")
@@ -155,20 +159,28 @@ if location_data:
                     st.markdown(f"{district_tag} | {age_tag}")
                     st.markdown(f"**Driver Safety Status:** `{inc['safety_status']}`")
                     st.write(f"**Full Details:** {inc['title']}")
+                    st.markdown(f"**[🔗 Read Full Article / Update]({inc['url']})**")
                     st.caption(f"Source: {inc['source']} | Published: {inc['timestamp']}")
 
-    # HISTORICAL DATABASE
+    #HISTORICAL DATABASE 
     with tab_history:
         st.subheader("🗄️ Historical Incident Logs")
         st.markdown("This database logs every emergency event captured during your live scans.")
         
-        # Load the data from SQLite and display it as an interactive table
         history_df = load_history()
         
         if not history_df.empty:
-            # Display metrics
             st.metric("Total Incidents Logged", len(history_df))
-            st.dataframe(history_df, use_container_width=True, hide_index=True)
+            
+            
+            st.dataframe(
+                history_df, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config={
+                    "url": st.column_config.LinkColumn("Source Link", display_text="Open Article 🔗")
+                }
+            )
         else:
             st.info("The database is currently empty. Wait for active incidents to be scanned.")
 
