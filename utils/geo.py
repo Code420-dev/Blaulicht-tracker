@@ -59,7 +59,6 @@ def calculate_distance_km(lat1, lon1, lat2, lon2):
     return R * c
 
 
-
 def get_incident_coordinates(city, district, fallback_lat, fallback_lon):
     """
     Attempts to find exact coordinates for an incident district.
