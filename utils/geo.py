@@ -14,37 +14,42 @@ STATE_CODES = {
     "Thüringen": "TH"
 }
 
-# CACHE for 24 hours  to reduce spam on API
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_location_info(location_input):
-    """Fetches coordinates for a given city or zip code."""
-    query = f"{location_input}, Germany"
-    url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&addressdetails=1&limit=1"
-    
-    
-    headers = {
-        'User-Agent': 'Fares-Portfolio-App/1.0 (Frankfurt UAS Informatik)'
-    }
+    """
+    Fetches coordinates using Open-Meteo with a smart fallback 
+    so it never fails on valid German cities.
+    """
+    clean_input = location_input.split(',')[0].strip()
+    url = f"https://geocoding-api.open-meteo.com/v1/search?name={clean_input}&count=5&language=de&format=json"
     
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, timeout=5)
         if response.status_code == 200:
             data = response.json()
-            if data:
-                lat = float(data[0]['lat'])
-                lon = float(data[0]['lon'])
+            if "results" in data and data["results"]:
                 
-                address = data[0].get('address', {})
-                city = address.get('city', address.get('town', address.get('village', location_input)))
-                state = address.get('state', 'Hessen')
-                state_code = STATE_CODES.get(state, "HE")
+                for res in data["results"]:
+                    cc = str(res.get("country_code", "")).upper()
+                    if cc == "DE" or "Germany" in str(res.get("country", "")):
+                        state = res.get('admin1', 'Hessen')
+                        return {
+                            "lat": float(res['latitude']),
+                            "lon": float(res['longitude']),
+                            "city": res.get('name', clean_input),
+                            "state": state,
+                            "state_code": STATE_CODES.get(state, "HE")
+                        }
                 
+                
+                res = data["results"][0]
+                state = res.get('admin1', 'Hessen')
                 return {
-                    "lat": lat,
-                    "lon": lon,
-                    "city": city.title(),
+                    "lat": float(res['latitude']),
+                    "lon": float(res['longitude']),
+                    "city": res.get('name', clean_input),
                     "state": state,
-                    "state_code": state_code
+                    "state_code": STATE_CODES.get(state, "HE")
                 }
     except Exception as e:
         pass
@@ -62,11 +67,7 @@ def get_incident_coordinates(city, district, fallback_lat, fallback_lon):
             query = f"{district}, {city}, Germany"
             
         url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1"
-        
-        #  exact same unique ID for the pins too
-        headers = {
-            'User-Agent': 'Fares-Portfolio-App/1.0 (Frankfurt UAS Informatik)'
-        }
+        headers = {'User-Agent': 'Fares-Portfolio-App/2.0'}
         
         try:
             response = requests.get(url, headers=headers, timeout=3)
